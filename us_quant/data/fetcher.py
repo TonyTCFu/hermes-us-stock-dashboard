@@ -48,7 +48,7 @@ def fetch_price_data(
     return result
 
 
-def fetch_fundamentals(ticker: str) -> dict:
+def fetch_fundamentals(ticker: str, max_retries: int = 3) -> dict:
     """抓取單檔股票的基本面資料。
 
     Returns
@@ -68,14 +68,26 @@ def fetch_fundamentals(ticker: str) -> dict:
         }
         失敗的欄位為 None。
     """
-    try:
-        s = yf.Ticker(ticker)
-        info = s.info or {}
-    except Exception:
-        return {}
+    import time
+    info = {}
+    for attempt in range(max_retries):
+        try:
+            s = yf.Ticker(ticker)
+            info = s.info or {}
+            if info:  # 拿到非空 dict 就跳出
+                break
+        except Exception:
+            pass
+        if attempt < max_retries - 1:
+            time.sleep(1.5 * (attempt + 1))  # 1.5s, 3s backoff
 
     def safe(v, default=None):
-        return v if v is not None and v != 0 else default
+        # 注意：dividend_yield 0 是有意義的值（不發股息），不能用 !=0 判斷
+        if v is None:
+            return default
+        if isinstance(v, (int, float)) and v != v:  # NaN check
+            return default
+        return v
 
     keys = {
         "market_cap": "marketCap",
@@ -89,14 +101,31 @@ def fetch_fundamentals(ticker: str) -> dict:
         "revenue_growth": "revenueGrowth",
         "beta": "beta",
     }
-    return {k: safe(info.get(v)) for k, v in keys.items()}
+
+    # dividend_yield 是百分比（0.0056 = 0.56%），yfinance 回傳小數
+    # 但有時 API 也會回傳百分比，需要標準化
+    out = {k: safe(info.get(v)) for k, v in keys.items()}
+
+    # 標準化 dividend_yield：yfinance 已經回傳小數（0.0056），
+    # 但有些 API 版本回傳百分比（0.56）— 判斷方式：如果值 > 1，可能是百分比
+    if out.get("dividend_yield") and out["dividend_yield"] > 1:
+        out["dividend_yield"] = out["dividend_yield"] / 100.0
+
+    return out
 
 
-def fetch_all_fundamentals(tickers: list[str]) -> pd.DataFrame:
-    """抓取多檔股票基本面，回傳 DataFrame (ticker × 欄位)。"""
+def fetch_all_fundamentals(tickers: list[str], max_retries: int = 3) -> pd.DataFrame:
+    """抓取多檔股票基本面，回傳 DataFrame (ticker × 欄位)。
+
+    Render / 雲端環境偶爾會抓不到，加 retry + 異常容忍。
+    """
     rows = []
     for t in tickers:
-        rows.append({"ticker": t, **fetch_fundamentals(t)})
+        try:
+            rows.append({"ticker": t, **fetch_fundamentals(t, max_retries=max_retries)})
+        except Exception as e:
+            # 單檔失敗不影響其他，加入空 row
+            rows.append({"ticker": t})
     return pd.DataFrame(rows).set_index("ticker")
 
 

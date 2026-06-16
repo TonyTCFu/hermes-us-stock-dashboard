@@ -170,7 +170,8 @@ class SizeFactor(FactorBase):
 
     def compute(self, price_data, fundamentals: Optional[pd.DataFrame] = None, **params) -> FactorResult:
         if fundamentals is None or "market_cap" not in fundamentals.columns:
-            raise ValueError("SizeFactor 需要 fundamentals DataFrame 且包含 market_cap")
+            # Render / 雲端環境 yfinance 偶爾缺欄位，回傳空分數而非 raise
+            return FactorResult(name=self.name, scores=pd.Series(dtype=float), description=self.description)
 
         mc = fundamentals["market_cap"].dropna()
         if mc.empty:
@@ -201,7 +202,7 @@ class DivYieldFactor(FactorBase):
 
     def compute(self, price_data, fundamentals: Optional[pd.DataFrame] = None, **params) -> FactorResult:
         if fundamentals is None or "dividend_yield" not in fundamentals.columns:
-            raise ValueError("DivYieldFactor 需要 fundamentals DataFrame")
+            return FactorResult(name=self.name, scores=pd.Series(dtype=float), description=self.description)
 
         dy = fundamentals["dividend_yield"].dropna()
         if dy.empty:
@@ -230,7 +231,7 @@ class RevenueGrowthFactor(FactorBase):
 
     def compute(self, price_data, fundamentals: Optional[pd.DataFrame] = None, **params) -> FactorResult:
         if fundamentals is None or "revenue_growth" not in fundamentals.columns:
-            raise ValueError("RevenueGrowthFactor 需要 fundamentals DataFrame")
+            return FactorResult(name=self.name, scores=pd.Series(dtype=float), description=self.description)
 
         rg = fundamentals["revenue_growth"].dropna()
         if rg.empty:
