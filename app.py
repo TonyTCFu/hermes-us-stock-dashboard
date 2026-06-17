@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 # ── 頁面設定 ──
 st.set_page_config(
-    page_title="【Hermes】美股量化分析平台",
+    page_title="【Claude Code】美股量化分析平台",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -62,7 +62,7 @@ st.markdown("""
 <meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Hermes 量化">
+<meta name="apple-mobile-web-app-title" content="Claude Code 量化">
 <style>
     .metric-card { background: #1a1a2e; padding: 1rem; border-radius: 0.5rem; border: 1px solid #2d2d4e; }
     .stTabs [data-baseweb="tab-list"] { gap: 1rem; }
@@ -191,7 +191,7 @@ run_btn = st.sidebar.button("🚀 執行分析", type="primary", use_container_w
 
 # ── Main ──
 
-st.header("📈 【Hermes】美股量化投資分析平台")
+st.header("📈 【Claude Code】美股量化投資分析平台")
 st.caption(
     f"股票池: {len(selected_tickers)} 檔 | "
     f"時間: {start_date} ~ {end_date} | "

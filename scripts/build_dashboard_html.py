@@ -244,11 +244,11 @@ def render_html(alpaca, signals, activities, macro):
 <meta http-equiv="refresh" content="900">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Hermes Quant">
+<meta name="apple-mobile-web-app-title" content="Claude Code Quant">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
-<title>【Hermes】美股量化 Dashboard</title>
+<title>【Claude Code】美股量化 Dashboard</title>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{background:#0f1117;color:#e1e4e8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:10px;line-height:1.5;-webkit-text-size-adjust:100%}}
@@ -279,13 +279,12 @@ td{{padding:4px 6px;border-bottom:1px solid #30363d;white-space:nowrap}}
 <body>
 
 <div class="nav">
-  <span style="color:#58a6ff">📈 <b>Hermes 美股量化</b></span>
+  <span style="color:#58a6ff">📈 <b>Claude Code 美股量化</b></span>
   <span style="color:#8b949e">| 刷新: {refresh_str}</span>
   <span style="color:#8b949e">| 每 15 分钟自动刷新</span>
-  <span style="color:#8b949e">| <a href="https://hermes-us-stock-dashboard.onrender.com">Streamlit 完整版 →</a></span>
 </div>
 
-<h1>📈 【Hermes】美股量化模型 — 即时持仓</h1>
+<h1>📈 【Claude Code】美股量化模型 — 即时持仓</h1>
 <div class="subtitle">
   $106K Alpaca Paper | 8因子 + AI主题 | SL5%/TP10% | 信号驱动调仓 | 2026-06-12 起运行
 </div>

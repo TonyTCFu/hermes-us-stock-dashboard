@@ -1,6 +1,6 @@
 {
-  "name": "【Hermes】美股量化分析平台",
-  "short_name": "Hermes 量化",
+  "name": "【Claude Code】美股量化分析平台",
+  "short_name": "ClaudeCode量化",
   "description": "美股多因子量化投資分析平台",
   "start_url": "/",
   "display": "standalone",
