@@ -1,0 +1,188 @@
+[
+  {
+    "date": "2026-06-17 14:44 ET",
+    "action": "rebalance",
+    "equity": 106108.31,
+    "cash": 23758.53,
+    "vix": 19.44,
+    "macro_mult": 0.5,
+    "details": {
+      "equity": 106108.31,
+      "cash": 23758.53,
+      "vix": 19.44,
+      "macro_mult": 0.5,
+      "sell_tickers": [
+        "AAPL",
+        "ABBV",
+        "BA",
+        "GE",
+        "JNJ",
+        "MA",
+        "V"
+      ],
+      "buy_tickers": [],
+      "tp_hits": [
+        "AMD",
+        "INTC"
+      ],
+      "sl_hits": [],
+      "orders": 12,
+      "strategy": "8因子 + AI主题 | 激进短期 | SL5%/TP10%",
+      "transition": "Hermes v1(10因子) → v2(8因子信号驱动)"
+    },
+    "positions_before": [
+      {
+        "ticker": "AMD",
+        "qty": 32,
+        "pnl_pct": 10.8
+      },
+      {
+        "ticker": "INTC",
+        "qty": 95,
+        "pnl_pct": 11.4
+      },
+      {
+        "ticker": "CAT",
+        "qty": 11,
+        "pnl_pct": 5.0
+      },
+      {
+        "ticker": "AVGO",
+        "qty": 27,
+        "pnl_pct": 0.3
+      },
+      {
+        "ticker": "LLY",
+        "qty": 7,
+        "pnl_pct": -2.2
+      },
+      {
+        "ticker": "CSCO",
+        "qty": 44,
+        "pnl_pct": 0.3
+      },
+      {
+        "ticker": "NVDA",
+        "qty": 12,
+        "pnl_pct": 2.1
+      },
+      {
+        "ticker": "GOOGL",
+        "qty": 5,
+        "pnl_pct": 3.4
+      },
+      {
+        "ticker": "AAPL",
+        "qty": 7,
+        "pnl_pct": 2.7
+      },
+      {
+        "ticker": "ABBV",
+        "qty": 10,
+        "pnl_pct": -1.3
+      },
+      {
+        "ticker": "BA",
+        "qty": 7,
+        "pnl_pct": 4.1
+      },
+      {
+        "ticker": "GE",
+        "qty": 13,
+        "pnl_pct": 9.5
+      },
+      {
+        "ticker": "JNJ",
+        "qty": 9,
+        "pnl_pct": -1.7
+      },
+      {
+        "ticker": "MA",
+        "qty": 3,
+        "pnl_pct": 2.1
+      },
+      {
+        "ticker": "V",
+        "qty": 5,
+        "pnl_pct": 2.8
+      }
+    ],
+    "positions_after": [
+      {
+        "ticker": "AAPL",
+        "qty": 7.0,
+        "pnl_pct": 2.4
+      },
+      {
+        "ticker": "ABBV",
+        "qty": 10.0,
+        "pnl_pct": -1.2
+      },
+      {
+        "ticker": "AMD",
+        "qty": 32.0,
+        "pnl_pct": 11.2
+      },
+      {
+        "ticker": "AVGO",
+        "qty": 27.0,
+        "pnl_pct": 1.4
+      },
+      {
+        "ticker": "BA",
+        "qty": 7.0,
+        "pnl_pct": 3.7
+      },
+      {
+        "ticker": "CAT",
+        "qty": 11.0,
+        "pnl_pct": 5.5
+      },
+      {
+        "ticker": "CSCO",
+        "qty": 44.0,
+        "pnl_pct": -0.1
+      },
+      {
+        "ticker": "GE",
+        "qty": 13.0,
+        "pnl_pct": 9.5
+      },
+      {
+        "ticker": "GOOGL",
+        "qty": 5.0,
+        "pnl_pct": 2.9
+      },
+      {
+        "ticker": "INTC",
+        "qty": 95.0,
+        "pnl_pct": 12.3
+      },
+      {
+        "ticker": "JNJ",
+        "qty": 9.0,
+        "pnl_pct": -2.0
+      },
+      {
+        "ticker": "LLY",
+        "qty": 7.0,
+        "pnl_pct": -1.9
+      },
+      {
+        "ticker": "MA",
+        "qty": 3.0,
+        "pnl_pct": 1.9
+      },
+      {
+        "ticker": "NVDA",
+        "qty": 12.0,
+        "pnl_pct": 2.0
+      },
+      {
+        "ticker": "V",
+        "qty": 5.0,
+        "pnl_pct": 2.6
+      }
+    ]
+  }
+]

@@ -582,9 +582,9 @@ with tab5:
     else:
         st.info(f"資料不足（需要至少 5 檔股票、2 年歷史資料），目前 {opt_price.shape[1]} 檔")
 
-# ════════════════════ Tab 6: Alpaca 帳戶 ════════════════════
+# ════════════════════ Tab 6: Alpaca 帳戶 & 活動 ════════════════════
 with tab6:
-    st.subheader("💼 Alpaca Paper Trading 帳戶")
+    st.subheader("💼 Alpaca Paper Trading — 即時持倉與活動")
 
     try:
         alpaca = AlpacaBroker()
@@ -593,90 +593,195 @@ with tab6:
         open_orders = alpaca.get_open_orders()
     except Exception as e:
         st.error(f"無法連線 Alpaca: {e}")
-        st.info("請確認 .env 中已設定 ALPACA_API_KEY 和 ALPACA_SECRET_KEY")
+        st.info("請確認環境變數已設定 ALPACA_API_KEY 和 ALPACA_SECRET_KEY")
         st.stop()
 
-    # 帳戶摘要
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("現金", f"${account['cash']:,.2f}")
-    col2.metric("總權益", f"${account['equity']:,.2f}")
-    col3.metric("購買力", f"${account['buying_power']:,.2f}")
+    # ── 帳戶摘要 ──
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("💰 總權益", f"${account['equity']:,.0f}")
+    col2.metric("💵 現金", f"${account['cash']:,.0f}")
+    col3.metric("📈 購買力", f"${account['buying_power']:,.0f}")
     day_str = f"{account['day_change_pct']*100:+.2f}%" if account['day_change_pct'] != 0 else "0.00%"
-    col4.metric("今日損益", day_str)
+    col4.metric("📊 今日損益", day_str)
+    col5.metric("📋 持倉數", f"{len(positions)} 檔")
 
     st.divider()
 
-    # 持倉明細
+    # ── 持倉明細（增強版） ──
     if positions:
         st.subheader(f"📋 目前持倉（{len(positions)} 檔）")
-        df = pd.DataFrame(positions)
-        df = df[["ticker", "qty", "avg_entry_price", "current_price",
-                  "cost_basis", "market_value", "unrealized_pl", "unrealized_pl_pct"]]
-        df.columns = ["股票", "股數", "均價", "現價", "成本", "市值", "未實現損益", "損益%"]
-        df["均價"] = df["均價"].apply(lambda x: f"${x:.2f}")
-        df["現價"] = df["現價"].apply(lambda x: f"${x:.2f}")
-        df["成本"] = df["成本"].apply(lambda x: f"${x:,.2f}")
-        df["市值"] = df["市值"].apply(lambda x: f"${x:,.2f}")
-        df["未實現損益"] = df.apply(
-            lambda r: f"{'🟢' if r['未實現損益']>=0 else '🔴'} ${r['未實現損益']:+,.2f}", axis=1)
-        df["損益%"] = df.apply(
-            lambda r: f"{'🟢' if r['損益%']>=0 else '🔴'} {r['損益%']:+.2f}%", axis=1)
-        st.dataframe(df, use_container_width=True, hide_index=True)
 
-        # 損益統計
-        total_pl = sum(p["unrealized_pl"] for p in positions)
-        total_cost = sum(p["cost_basis"] for p in positions)
+        # 計算總數據
         total_mv = sum(p["market_value"] for p in positions)
+        total_cost = sum(p["cost_basis"] for p in positions)
+        total_pl = sum(p["unrealized_pl"] for p in positions)
+
+        df = pd.DataFrame(positions)
+        df["weight"] = df["market_value"] / total_mv * 100
+
+        # 構建顯示用的 DataFrame
+        display = pd.DataFrame({
+            "股票": df["ticker"],
+            "股數": df["qty"].apply(lambda x: f"{x:.0f}"),
+            "均價": df["avg_entry_price"].apply(lambda x: f"${x:.2f}"),
+            "現價": df["current_price"].apply(lambda x: f"${x:.2f}"),
+            "市值": df["market_value"].apply(lambda x: f"${x:,.0f}"),
+            "權重": df["weight"].apply(lambda x: f"{x:.1f}%"),
+            "損益$": df["unrealized_pl"].apply(
+                lambda x: f"{'🟢' if x>=0 else '🔴'} ${x:+,.0f}"),
+            "損益%": df["unrealized_pl_pct"].apply(
+                lambda x: f"{'🟢' if x>=0 else '🔴'} {x:+.1f}%"),
+        })
+        st.dataframe(display, use_container_width=True, hide_index=True)
+
+        # 持倉權重圓餅圖 + 損益長條圖
+        c1, c2 = st.columns(2)
+        with c1:
+            fig_pie = px.pie(
+                df, values="market_value", names="ticker", title="持倉權重分佈",
+                color_discrete_sequence=px.colors.qualitative.Set2,
+            )
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+            fig_pie.update_layout(height=350, margin=dict(l=0, r=0, t=30, b=0))
+            st.plotly_chart(fig_pie, use_container_width=True)
+        with c2:
+            df_sorted = df.sort_values("unrealized_pl")
+            colors = ['#2ecc71' if x >= 0 else '#e74c3c' for x in df_sorted["unrealized_pl"]]
+            fig_bar = go.Figure(data=[
+                go.Bar(x=df_sorted["ticker"], y=df_sorted["unrealized_pl"],
+                       marker_color=colors, text=df_sorted["unrealized_pl"].apply(lambda x: f"${x:+,.0f}"),
+                       textposition='outside')
+            ])
+            fig_bar.update_layout(
+                title="未實現損益分佈", height=350, margin=dict(l=0, r=0, t=30, b=0),
+                xaxis_title="", yaxis_title="損益 (USD)",
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+        # 損益彙總
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("總成本", f"${total_cost:,.0f}")
+        c2.metric("總市值", f"${total_mv:,.0f}")
         pl_pct = (total_pl / total_cost * 100) if total_cost > 0 else 0
-        cp1, cp2, cp3 = st.columns(3)
-        cp1.metric("總成本", f"${total_cost:,.0f}")
-        cp2.metric("總市值", f"${total_mv:,.0f}")
-        cp3.metric("未實現損益",
-                   f"{'🟢 ' if total_pl>=0 else '🔴 '}${total_pl:+,.0f} ({pl_pct:+.2f}%)")
+        c3.metric("未實現損益",
+                  f"{'🟢' if total_pl>=0 else '🔴'} ${total_pl:+,.0f} ({pl_pct:+.2f}%)")
+        # 計算今日變動
+        today_change = sum(p.get("day_change", 0) for p in positions)
+        c4.metric("今日持倉變動", f"{'🟢' if today_change>=0 else '🔴'} ${today_change:+,.0f}")
     else:
         st.info("目前無持倉")
 
     st.divider()
 
-    # 未成交訂單
+    # ── 未成交訂單 ──
     if open_orders:
-        st.subheader(f"📝 未成交訂單（{len(open_orders)} 筆）")
+        st.subheader(f"📝 待成交訂單（{len(open_orders)} 筆）")
         odf = pd.DataFrame(open_orders)
         odf = odf[["ticker", "side", "qty", "limit_price", "status", "created_at"]]
         odf.columns = ["股票", "方向", "數量", "限價", "狀態", "下單時間"]
         odf["限價"] = odf["限價"].apply(lambda x: f"${x:.2f}" if x else "-")
         st.dataframe(odf, use_container_width=True, hide_index=True)
     else:
-        st.info("無未成交訂單")
+        st.success("✅ 無待成交訂單，所有交易已完成")
 
-    # 與模型目標比較
     st.divider()
-    st.subheader("🎯 模型目標 vs 實際持倉")
-    st.caption("此處顯示最新回測結果的目標持倉與 Alpaca 實際持倉的差異")
-    if bt_result and bt_result.holdings_detail:
-        target = {h["ticker"]: h for h in bt_result.holdings_detail}
-        actual = {p["ticker"]: p for p in positions}
 
-        all_tickers = sorted(set(list(target.keys()) + list(actual.keys())))
-        compare_rows = []
-        for t in all_tickers:
-            tgt = target.get(t)
-            act = actual.get(t)
-            tgt_shares = tgt["shares"] if tgt else 0
-            act_shares = act["qty"] if act else 0
-            diff = act_shares - tgt_shares
-            if abs(diff) > 0.1:
-                compare_rows.append({
-                    "股票": t,
-                    "目標股數": tgt_shares,
-                    "實際股數": act_shares,
-                    "差異": f"{'🟢' if abs(diff)<1 else '🔴'} {diff:+.0f}",
-                })
-        if compare_rows:
-            st.dataframe(pd.DataFrame(compare_rows), use_container_width=True, hide_index=True)
-            st.caption("差異 > 0：需賣出多餘持股 ｜ 差異 < 0：需補買不足持股")
-        else:
-            st.success("✅ 目前持倉與模型目標一致，無需調整")
+    # ── 最近活動記錄 ──
+    st.subheader("📜 最近調倉活動")
+    activity_path = Path(__file__).resolve().parent / "data" / "activity.json"
+    if activity_path.exists():
+        try:
+            import json
+            activities = json.loads(activity_path.read_text())
+            if activities:
+                for act in reversed(activities[-10:]):  # 最近 10 筆
+                    act_date = act.get("date", "")
+                    act_type = act.get("action", "")
+                    det = act.get("details", {})
+
+                    # 活動標題
+                    icon = "🔄" if act_type == "rebalance" else "📊"
+                    expander_label = f"{icon} {act_date} — {act_type}"
+                    if act_type == "rebalance":
+                        expander_label += f" | 權益 ${act.get('equity', 0):,.0f} | VIX {act.get('vix', 0):.1f}"
+                    with st.expander(expander_label, expanded=(len(activities) - activities.index(act) <= 2)):
+                        col_a, col_b, col_c = st.columns(3)
+                        col_a.metric("權益", f"${act.get('equity', 0):,.0f}")
+                        col_b.metric("現金", f"${act.get('cash', 0):,.0f}")
+                        col_c.metric("VIX / 宏觀", f"{act.get('vix', 0):.1f} / ×{act.get('macro_mult', 1.0):.0%}")
+
+                        # 買賣摘要
+                        before = act.get("positions_before", [])
+                        after = act.get("positions_after", [])
+                        if before:
+                            before_tickers = {p["ticker"] for p in before}
+                            after_tickers = {p["ticker"] for p in after} if after else set()
+                            sold = before_tickers - after_tickers
+                            bought = after_tickers - before_tickers if after else set()
+
+                            if sold or bought:
+                                cols = st.columns(2)
+                                with cols[0]:
+                                    if sold:
+                                        st.markdown("**📉 賣出:** " + ", ".join(sorted(sold)))
+                                    if bought:
+                                        st.markdown("**📈 買入:** " + ", ".join(sorted(bought)))
+                                with cols[1]:
+                                    tp = det.get("tp_hits", [])
+                                    sl = det.get("sl_hits", [])
+                                    if tp:
+                                        st.markdown(f"🎯 止盈: {', '.join(tp)}")
+                                    if sl:
+                                        st.markdown(f"🛑 止损: {', '.join(sl)}")
+
+                            # 持倉變化
+                            st.caption(f"調倉前: {', '.join(p['ticker'] + f'({p[\"pnl_pct\"]:+.1f}%)' for p in before)}")
+                            if after:
+                                st.caption(f"調倉後: {', '.join(p['ticker'] + f'({p[\"pnl_pct\"]:+.1f}%)' for p in after)}")
+                        st.caption(f"訂單數: {det.get('orders', 0)}")
+            else:
+                st.info("尚無活動記錄")
+        except Exception as e:
+            st.warning(f"讀取活動記錄失敗: {e}")
+    else:
+        st.info("尚無活動記錄（調倉後自動產生）")
+
+    st.divider()
+
+    # ── 策略狀態摘要 ──
+    st.subheader("🎯 策略狀態")
+    try:
+        from us_quant.risk import RiskManager, MACRO_CALENDAR
+        from datetime import date
+
+        rm = RiskManager(stop_loss_pct=0.05, take_profit_pct=0.10, max_holding=8)
+
+        # VIX
+        try:
+            vix_data = fetch_vix(start="2026-01-01")
+            current_vix = float(vix_data.iloc[-1]) if not vix_data.empty else 0
+        except Exception:
+            current_vix = 0
+
+        macro_mult = rm.get_macro_multiplier(dt=date.today(), vix=current_vix)
+
+        sc1, sc2, sc3, sc4 = st.columns(4)
+        sc1.metric("因子數", "8")
+        sc2.metric("最大持倉", "8 檔")
+        sc3.metric("風控", "SL -5% / TP +10%")
+        sc4.metric("調倉模式", "信號驅動")
+
+        sc5, sc6, sc7, sc8 = st.columns(4)
+        vix_emoji = "🔴" if current_vix > 30 else "🟡" if current_vix > 20 else "🟢"
+        sc5.metric("VIX", f"{vix_emoji} {current_vix:.1f}")
+        sc6.metric("宏觀係數", f"×{macro_mult:.0%}")
+        today_str = date.today().strftime("%Y-%m-%d")
+        event_today = MACRO_CALENDAR.get(today_str)
+        sc7.metric("今日事件", event_today.upper() if event_today else "無")
+        sc8.metric("因子權重",
+                   f"momentum .20 | ai .20 | quality .15")
+    except Exception as e:
+        st.caption(f"策略狀態加載中... ({e})")
 
 # ── Footer ──
 st.divider()

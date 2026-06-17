@@ -12,6 +12,7 @@ from .library import (
     IndustryMomentumFactor,
     FlowFactor,
     FXExposureFactor,
+    AIThemeFactor,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "MomentumFactor", "ValueFactor", "QualityFactor",
     "LowVolFactor", "SizeFactor", "DivYieldFactor", "RevenueGrowthFactor",
     "IndustryMomentumFactor", "FlowFactor", "FXExposureFactor",
+    "AIThemeFactor",
 ]

@@ -454,6 +454,99 @@ class FXExposureFactor(FactorBase):
         return FactorResult(name=self.name, scores=scores, raw=raw, description=self.description)
 
 
+class AIThemeFactor(FactorBase):
+    """AI 主题因子：AI 产业链曝光度 × AI 板块相对强度（vs SPY）。
+
+    追蹤純 AI 籃子相對大盤的超額收益，作為 AI 主題熱度的代理變量。
+    個股 AI 曝光度越高，在 AI 主題火熱時得分越高。
+    """
+
+    # 個股 AI 產業鏈曝光度 (0-100)，基於業務結構分析
+    AI_EXPOSURE: dict[str, float] = {
+        # ── 芯片/硬件層 ──
+        "NVDA": 100, "AMD": 95, "AVGO": 90, "INTC": 70, "TSM": 85,
+        # ── 雲端/基礎設施層 ──
+        "MSFT": 90, "GOOGL": 85, "AMZN": 80, "ORCL": 65, "IBM": 55,
+        # ── AI 應用/平台層 ──
+        "META": 80, "ADBE": 70, "CRM": 70, "AAPL": 60, "SAP": 50,
+        # ── 間接受益 ──
+        "CSCO": 40, "ACN": 40, "NFLX": 35, "DIS": 30, "BA": 20,
+        "GE": 20, "CAT": 15, "TMO": 15, "TM": 15,
+        # ── 金融/支付 AI 應用 ──
+        "JPM": 15, "V": 15, "MA": 15, "GS": 15,
+        # ── 傳統行業（低 AI 曝光） ──
+        "JNJ": 10, "ABBV": 10, "LLY": 10, "UNH": 10,
+        "PG": 5, "KO": 5, "PEP": 5, "HD": 5, "MCD": 5, "NKE": 5,
+        "WMT": 5, "XOM": 0, "CVX": 0,
+    }
+
+    AI_BASKET = ["NVDA", "AMD", "AVGO", "MSFT", "GOOGL", "META", "AMZN", "CRM"]
+
+    def __init__(self, lookback: int = 21):
+        super().__init__(name="ai_industry", description=f"AI 主题强度（{lookback}日相對SPY動量）")
+        self.lookback = lookback
+
+    def compute(self, price_data: dict[str, pd.DataFrame], **params) -> FactorResult:
+        lookback = params.get("lookback", self.lookback)
+
+        # 建立 AI 籃子等權指數
+        basket_prices = []
+        for t in self.AI_BASKET:
+            if t in price_data and not price_data[t].empty:
+                s = price_data[t]["Close"].sort_index().rename(t)
+                basket_prices.append(s)
+        if len(basket_prices) < 3:
+            return FactorResult(name=self.name, scores=pd.Series(dtype=float), description=self.description)
+
+        ai_index = pd.concat(basket_prices, axis=1).ffill().mean(axis=1)
+        ai_ret = ai_index.pct_change()
+
+        # SPY 基準
+        spy = params.get("benchmark")
+        if spy is None:
+            spy_ret = pd.Series(dtype=float)
+        elif isinstance(spy, pd.DataFrame):
+            spy_close = spy["Close"].sort_index()
+            spy_ret = spy_close.pct_change()
+        elif isinstance(spy, pd.Series):
+            spy_ret = spy.sort_index().pct_change()
+
+        # AI 相對 SPY 的超額收益
+        if not spy_ret.empty:
+            common_idx = ai_ret.index.intersection(spy_ret.index)
+            relative = (ai_ret.loc[common_idx] - spy_ret.loc[common_idx]).dropna()
+        else:
+            relative = ai_ret.dropna()
+
+        if relative.empty:
+            return FactorResult(name=self.name, scores=pd.Series(dtype=float), description=self.description)
+
+        # 累積相對動能（回看 N 日）
+        cum_rel = relative.rolling(lookback).sum()
+
+        records: list[dict] = []
+        for date in cum_rel.dropna().index:
+            strength = cum_rel[date]
+            if pd.isna(strength):
+                continue
+            for ticker in price_data:
+                exp = self.AI_EXPOSURE.get(ticker, 0)
+                if exp == 0:
+                    continue
+                if ticker not in price_data or price_data[ticker].empty:
+                    continue
+                if date not in price_data[ticker].index:
+                    continue
+                records.append({"ticker": ticker, "date": date, "value": exp * strength})
+
+        if not records:
+            return FactorResult(name=self.name, scores=pd.Series(dtype=float), description=self.description)
+
+        raw = pd.DataFrame(records).set_index(["ticker", "date"]).squeeze("columns")
+        scores = self._zscore(raw)
+        return FactorResult(name=self.name, scores=scores, raw=raw, description=self.description)
+
+
 # ── 工廠函數 ──
 
 FACTOR_REGISTRY: dict[str, type[FactorBase]] = {
@@ -467,6 +560,7 @@ FACTOR_REGISTRY: dict[str, type[FactorBase]] = {
     "industry_momentum": IndustryMomentumFactor,
     "flow": FlowFactor,
     "fx_exposure": FXExposureFactor,
+    "ai_industry": AIThemeFactor,
 }
 
 

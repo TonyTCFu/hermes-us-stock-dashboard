@@ -34,7 +34,7 @@ INITIAL_CAPITAL = get_env_float("INITIAL_CAPITAL", 1_000_000)
 TRANSACTION_COST = get_env_float("TRANSACTION_COST", 0.001)
 SLIPPAGE = get_env_float("SLIPPAGE", 0.0005)
 REBALANCE_FREQUENCY = get_env("REBALANCE_FREQUENCY", "biweekly")
-MAX_HOLDING = int(get_env_float("MAX_HOLDING", 20))
+MAX_HOLDING = int(get_env_float("MAX_HOLDING", 8))
 
 # ── 因子設定 ──
 # 格式: 因子名:權重,逗號分隔
@@ -42,9 +42,9 @@ FACTOR_WEIGHTS = {
     k.strip(): float(v.strip())
     for item in get_env(
         "FACTOR_WEIGHTS",
-        "momentum:0.15,value:0.10,quality:0.15,low_vol:0.10,size:0.05,"
-        "div_yield:0.05,revenue_growth:0.10,"
-        "industry_momentum:0.10,flow:0.10,fx_exposure:0.10",
+        "momentum:0.20,value:0.10,quality:0.15,low_vol:0.05,"
+        "revenue_growth:0.10,industry_momentum:0.10,flow:0.10,"
+        "ai_industry:0.20",
     ).split(",")
     for k, v in [item.split(":")]
 }
