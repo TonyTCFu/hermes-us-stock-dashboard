@@ -1,0 +1,145 @@
+{
+  "updated": "2026-06-17 20:48 ET",
+  "equity": 106122.07,
+  "cash": 23758.53,
+  "buying_power": 15279.85,
+  "day_change_pct": 1.11,
+  "positions": [
+    {
+      "ticker": "AAPL",
+      "qty": 7.0,
+      "avg_price": 291.56,
+      "current_price": 298.6199,
+      "market_value": 2090.3393,
+      "unrealized_pl": 49.4193,
+      "unrealized_pl_pct": 2.42
+    },
+    {
+      "ticker": "ABBV",
+      "qty": 10.0,
+      "avg_price": 225.03,
+      "current_price": 222.27,
+      "market_value": 2222.7,
+      "unrealized_pl": -27.6,
+      "unrealized_pl_pct": -1.23
+    },
+    {
+      "ticker": "AMD",
+      "qty": 32.0,
+      "avg_price": 469.604063,
+      "current_price": 522.25,
+      "market_value": 16712.0,
+      "unrealized_pl": 1684.669984,
+      "unrealized_pl_pct": 11.21
+    },
+    {
+      "ticker": "AVGO",
+      "qty": 27.0,
+      "avg_price": 380.276296,
+      "current_price": 385.57,
+      "market_value": 10410.39,
+      "unrealized_pl": 142.930008,
+      "unrealized_pl_pct": 1.39
+    },
+    {
+      "ticker": "BA",
+      "qty": 7.0,
+      "avg_price": 218.4,
+      "current_price": 227.03,
+      "market_value": 1589.21,
+      "unrealized_pl": 60.41,
+      "unrealized_pl_pct": 3.95
+    },
+    {
+      "ticker": "CAT",
+      "qty": 11.0,
+      "avg_price": 904.587273,
+      "current_price": 953.96,
+      "market_value": 10493.56,
+      "unrealized_pl": 543.099997,
+      "unrealized_pl_pct": 5.46
+    },
+    {
+      "ticker": "CSCO",
+      "qty": 44.0,
+      "avg_price": 119.187955,
+      "current_price": 119.25,
+      "market_value": 5247.0,
+      "unrealized_pl": 2.72998,
+      "unrealized_pl_pct": 0.05
+    },
+    {
+      "ticker": "GE",
+      "qty": 13.0,
+      "avg_price": 322.01,
+      "current_price": 352.63,
+      "market_value": 4584.19,
+      "unrealized_pl": 398.06,
+      "unrealized_pl_pct": 9.51
+    },
+    {
+      "ticker": "GOOGL",
+      "qty": 5.0,
+      "avg_price": 360.87,
+      "current_price": 371.02,
+      "market_value": 1855.1,
+      "unrealized_pl": 50.75,
+      "unrealized_pl_pct": 2.81
+    },
+    {
+      "ticker": "INTC",
+      "qty": 95.0,
+      "avg_price": 107.953053,
+      "current_price": 121.12,
+      "market_value": 11506.4,
+      "unrealized_pl": 1250.859965,
+      "unrealized_pl_pct": 12.2
+    },
+    {
+      "ticker": "JNJ",
+      "qty": 9.0,
+      "avg_price": 240.19,
+      "current_price": 235.4562,
+      "market_value": 2119.1058,
+      "unrealized_pl": -42.6042,
+      "unrealized_pl_pct": -1.97
+    },
+    {
+      "ticker": "LLY",
+      "qty": 7.0,
+      "avg_price": 1145.0,
+      "current_price": 1123.0,
+      "market_value": 7861.0,
+      "unrealized_pl": -154.0,
+      "unrealized_pl_pct": -1.92
+    },
+    {
+      "ticker": "MA",
+      "qty": 3.0,
+      "avg_price": 491.01,
+      "current_price": 500.4,
+      "market_value": 1501.2,
+      "unrealized_pl": 28.17,
+      "unrealized_pl_pct": 1.91
+    },
+    {
+      "ticker": "NVDA",
+      "qty": 12.0,
+      "avg_price": 204.48,
+      "current_price": 208.5935,
+      "market_value": 2503.122,
+      "unrealized_pl": 49.362,
+      "unrealized_pl_pct": 2.01
+    },
+    {
+      "ticker": "V",
+      "qty": 5.0,
+      "avg_price": 324.12,
+      "current_price": 332.1085,
+      "market_value": 1660.5425,
+      "unrealized_pl": 39.9425,
+      "unrealized_pl_pct": 2.46
+    }
+  ],
+  "position_count": 15
+}
