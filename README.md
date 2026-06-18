@@ -1,93 +1,72 @@
-# 📈 【Hermes】美股量化分析平台
+# 📈 【Claude Code】美股量化分析平台
 
-> 美股多因子量化選股 + 回測 + 組合最佳化 + Alpaca Paper Trading 整合
+> 8因子信号驱动 + AI主题 | 激进短期 | SL5%/TP10% | Alpaca Paper Trading
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.35+-red)](https://streamlit.io)
 
 ## ✨ 功能
 
-- **📦 資料層** — yfinance 抓取股價 & 基本面、SQLite 本地快取、行業分類、DXY/VIX 宏觀資料
-- **🧬 10 因子引擎**
-  - 技術面：momentum（12 月動能）、low_vol（年化波動）
-  - 基本面：value（PE/PB/PS）、quality（ROE/毛利率/負債）、size（市值）、div_yield、revenue_growth
-  - 進階：**industry_momentum**（產業輪動）、**flow**（MFI 資金流向）、**fx_exposure**（DXY × 海外營收曝險）
-- **🛡️ VIX 市場狀態調節** — VIX > 30 信號砍半、20-30 線性遞減
-- **📊 回測引擎** — biweekly / monthly / quarterly / yearly 自動再平衡
-- **🎯 組合最佳化** — max_sharpe / min_vol / risk_parity
-- **💼 Alpaca Paper Trading** — 即時帳戶、持倉、未成交訂單
+- **📦 数据层** — yfinance 抓取股价 & 基本面、SQLite 本地快取、行业分类、DXY/VIX 数据
+- **🧬 8因子引擎**
+  - 技术面：momentum（12月动能）、low_vol（年化波动）、flow（MFI资金流向）
+  - 基本面：value（PE/PB/PS）、quality（ROE/毛利率/负债）、revenue_growth（营收增长）
+  - 进阶：**industry_momentum**（行业轮动）、**ai_industry**（AI主题强度）
+- **🛡️ 风控模块** — SL5%/TP10%个券止损、FOMC/CPI/NFP宏观事件降仓、VIX调节
+- **📊 回测引擎** — biweekly / monthly / quarterly / yearly 自动再平衡
+- **💼 Alpaca Paper Trading** — 实时账户、持仓、信号排名、活动记录
 
-## 🚀 部署到 Render（一鍵）
+## 🚀 公网访问
 
-1. **建立 GitHub repo**（公開，名字任意，例如 `hermes-us-stock-dashboard`）
-2. **把這個 repo push 上去**
-3. 去 [render.com](https://render.com) → 用 GitHub 登入
-4. 點 **New +** → **Web Service** → 選你的 repo
-5. Render 會自動讀 `render.yaml`，確認設定：
-   - Runtime: Python
-   - Build Command: （留空，自動跑 `pip install -r requirements.txt`）
-   - Start Command: `streamlit run app.py --server.port $PORT ...`
-   - Plan: **Free**
-   - Region: **Singapore**（亞洲節點，台灣延遲最低）
-6. **設定環境變數**（在 Render 後台 Environment 頁面）：
-   - `ALPACA_API_KEY`：你的 paper trading key
-   - `ALPACA_SECRET_KEY`：你的 paper trading secret
-   - （其他 render.yaml 已寫好）
-7. 點 **Deploy Web Service**，等 5-10 分鐘
-8. Render 會給你一個 `https://xxx.onrender.com` 的網址
+- Dashboard: http://cc-us-stock-dashboard.futienchun.com
 
-> ⚠️ **免費方案 15 分鐘 idle 會 sleep**，下次訪問要等 30-60 秒冷啟動
-
-## 🛠️ 本地開發
+## 🛠️ 本地开发
 
 ```bash
-# 用 uv 安裝（推薦）
-pip install uv
-uv venv --python 3.12
-uv pip install -e .
+cd ~/hermes-workplace/us-stock-quant
 
-# 或用 pip
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+# 启动 Dashboard
+PYTHONPATH=.venv/lib/python3.12/site-packages:. .venv/bin/streamlit run app.py
 
-# 啟動 Dashboard
-streamlit run app.py
+# 运行调仓脚本
+PYTHONPATH=.venv/lib/python3.12/site-packages:. .venv/bin/python scripts/rebalance_v2.py
+
+# 生成 HTML Dashboard
+PYTHONPATH=.venv/lib/python3.12/site-packages:. .venv/bin/python scripts/build_dashboard_html.py
 ```
 
-## 📁 專案結構
+## 📁 项目结构
 
 ```
-hermes-us-stock-dashboard/
-├── app.py                  # Streamlit 入口（Render 部署用）
-├── requirements.txt        # 依賴清單
-├── render.yaml             # Render 部署配置
-├── us_quant/               # 核心套件
-│   ├── env.py              # 統一環境變數讀取（Render + 本地）
-│   ├── config.py           # 配置（環境變數驅動）
-│   ├── data/               # 資料層（yfinance + SQLite）
-│   ├── factors/            # 10 因子引擎
-│   ├── signals/            # Z-score 合成 + VIX 調節
-│   ├── backtest/           # 回測引擎
-│   ├── portfolio/          # PyPortfolioOpt 最佳化
-│   ├── reporting/          # 績效指標
-│   └── broker/             # Alpaca API 封裝
-├── scripts/                # CLI 工具（rebalance.py 等）
-└── static/                 # PWA 圖示
+us-stock-quant/
+├── app.py                      # Streamlit 入口
+├── us_quant/                   # 核心套件
+│   ├── config.py               # 环境变量驱动配置
+│   ├── env.py                  # 统一环境变量读取
+│   ├── risk.py                 # 风控模块（SL/TP + 宏观事件 + 仓位分配）
+│   ├── data/                   # 数据层（yfinance + SQLite）
+│   ├── factors/                # 8因子引擎（含AI主题因子）
+│   ├── signals/                # Z-score合成 + VIX调节
+│   ├── backtest/               # 回测引擎
+│   ├── portfolio/              # PyPortfolioOpt 最优化
+│   ├── reporting/              # 绩效指标
+│   └── broker/                 # Alpaca API 封装
+├── scripts/                    # CLI 工具
+│   ├── rebalance_v2.py         # 信号驱动调仓
+│   └── build_dashboard_html.py # 静态 HTML Dashboard 生成
+└── static/                     # PWA 图标
 ```
 
-## 🔑 環境變數
+## 🔑 环境变量
 
-| 變數 | 必填 | 說明 |
+| 变量 | 必填 | 说明 |
 |------|:----:|------|
 | `ALPACA_API_KEY` | ✅ | Alpaca Paper Trading API Key |
 | `ALPACA_SECRET_KEY` | ✅ | Alpaca Paper Trading Secret |
-| `ALPACA_BASE_URL` | ❌ | 預設 `https://paper-api.alpaca.markets` |
-| `STOCK_UNIVERSE` | ❌ | 39 檔大型美股，預設值見 `render.yaml` |
-| `FACTOR_WEIGHTS` | ❌ | 10 因子權重，預設值見 `render.yaml` |
-| `REBALANCE_FREQUENCY` | ❌ | biweekly / monthly / quarterly |
-| `DATA_DIR` | ❌ | SQLite DB 路徑（Render 預設 `/tmp/data`） |
+| `ALPACA_BASE_URL` | ❌ | 默认 `https://paper-api.alpaca.markets` |
+| `STOCK_UNIVERSE` | ❌ | 39档大型美股 |
+| `FACTOR_WEIGHTS` | ❌ | 8因子权重（momentum .20, ai_industry .20, quality .15, ...） |
 
-## ⚠️ 免責聲明
+## ⚠️ 免责声明
 
-本工具僅供研究與教育用途，不構成任何投資建議。歷史績效不代表未來表現。
+本工具仅供研究与教育用途，不构成任何投资建议。历史绩效不代表未来表现。

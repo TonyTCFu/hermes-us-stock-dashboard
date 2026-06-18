@@ -28,7 +28,7 @@
       "sl_hits": [],
       "orders": 12,
       "strategy": "8因子 + AI主题 | 激进短期 | SL5%/TP10%",
-      "transition": "Hermes v1(10因子) → v2(8因子信号驱动)"
+      "transition": "Claude Code v1(10因子) → v2(8因子信号驱动)"
     },
     "positions_before": [
       {
