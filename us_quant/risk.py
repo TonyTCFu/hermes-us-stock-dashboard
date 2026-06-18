@@ -15,30 +15,32 @@ logger = logging.getLogger(__name__)
 # 格式: "YYYY-MM-DD" → event_type
 # event_type: fomc / cpi / nfp
 # 需定期更新（FOMC 每年 8 次，CPI 每月中，NFP 每月第一个周五）
+# FOMC 日期来源: federalreserve.gov/monetarypolicy/fomccalendars.htm
 MACRO_CALENDAR: dict[str, str] = {
-    # 2026 Q3-Q4 (预估，实际日期以美联储公告为准)
-    "2026-06-17": "fomc",
-    "2026-07-10": "cpi",
-    "2026-07-15": "nfp",
+    # ── 2026 FOMC (8次，周三宣布) ──
     "2026-07-29": "fomc",
-    "2026-08-07": "nfp",
-    "2026-08-12": "cpi",
-    "2026-09-04": "nfp",
-    "2026-09-11": "cpi",
     "2026-09-23": "fomc",
-    "2026-10-02": "nfp",
-    "2026-10-13": "cpi",
-    "2026-11-06": "fomc",
-    "2026-11-06": "nfp",
-    "2026-11-13": "cpi",
-    "2026-12-04": "nfp",
-    "2026-12-11": "cpi",
+    "2026-11-05": "fomc",
     "2026-12-16": "fomc",
+    # ── 2026 CPI (每月中) ──
+    "2026-07-15": "cpi",
+    "2026-08-12": "cpi",
+    "2026-09-11": "cpi",
+    "2026-10-13": "cpi",
+    "2026-11-13": "cpi",
+    "2026-12-11": "cpi",
+    # ── 2026 NFP (每月第一个周五) ──
+    "2026-07-03": "nfp",
+    "2026-08-07": "nfp",
+    "2026-09-04": "nfp",
+    "2026-10-02": "nfp",
+    "2026-11-06": "nfp",
+    "2026-12-04": "nfp",
 }
 
 # 宏观事件仓位系数
 MACRO_MULTIPLIER: dict[str, float] = {
-    "fomc": 0.50,  # FOMC 日仓位减半
+    "fomc": 0.0,   # FOMC 日禁止新买入（跳空风险不可控，SL 防不住）
     "cpi": 0.75,   # CPI 日仓位 75%
     "nfp": 0.75,   # NFP 日仓位 75%
 }
@@ -95,18 +97,28 @@ class RiskManager:
     def get_macro_multiplier(self, dt: Optional[date] = None, vix: float = 0) -> float:
         """综合宏观仓位系数 (0.0 ~ 1.0)。
 
-        取宏观事件和 VIX 调节中较严格的那个。
+        取宏观事件、VIX 调节、FOMC 预警中较严格的那个。
         """
         if dt is None:
             dt = date.today()
 
         dt_str = dt.strftime("%Y-%m-%d")
 
-        # 宏观事件
+        # 宏观事件（今天）
         event_type = MACRO_CALENDAR.get(dt_str)
         event_mult = MACRO_MULTIPLIER.get(event_type, 1.0) if event_type else 1.0
 
-        # VIX 调节（来自 Hermes 原有逻辑）
+        # FOMC 预警：向前扫描 2 天，如果未来 2 天内有 FOMC，仓位降为 50%
+        fomc_warn_mult = 1.0
+        from datetime import timedelta
+        for offset in range(1, 3):
+            check_date = dt + timedelta(days=offset)
+            check_str = check_date.strftime("%Y-%m-%d")
+            if MACRO_CALENDAR.get(check_str) == "fomc":
+                fomc_warn_mult = 0.50
+                break
+
+        # VIX 调节
         if vix > 30:
             vix_mult = 0.50
         elif vix > 25:
@@ -116,12 +128,14 @@ class RiskManager:
         else:
             vix_mult = 1.0
 
-        multiplier = min(event_mult, vix_mult)
+        multiplier = min(event_mult, fomc_warn_mult, vix_mult)
 
         if multiplier < 1.0:
             reasons = []
             if event_type:
                 reasons.append(f"{event_type.upper()}: ×{event_mult:.0%}")
+            if fomc_warn_mult < 1.0:
+                reasons.append("FOMC 预警")
             if vix_mult < 1.0:
                 reasons.append(f"VIX {vix:.1f}: ×{vix_mult:.0%}")
             logger.info("📊 宏观系数: %.0f%%（%s）", multiplier * 100, ", ".join(reasons))
