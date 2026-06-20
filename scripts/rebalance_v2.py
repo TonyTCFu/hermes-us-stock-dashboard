@@ -412,6 +412,7 @@ def execute_rebalance(
     all_scores_df: pd.DataFrame,
     latest_prices: pd.Series,
     macro_mult: float,
+    skip_buy: set[str] | None = None,
 ) -> dict:
     """执行完整调仓。
 
@@ -431,6 +432,8 @@ def execute_rebalance(
     cash2, _, positions2 = get_current_positions(client)
     current_tickers2 = set(positions2["ticker"]) if not positions2.empty else set()
 
+    skip_buy = skip_buy or set()
+
     # ── 信号强度加权仓位分配 ──
     positions_new = risk.size_positions(
         target_top["signal"],
@@ -449,6 +452,9 @@ def execute_rebalance(
 
     for target in positions_new:
         t = target["ticker"]
+        if t in skip_buy:
+            logger.info("  ⏭️  %s: 刚止盈半卖，本轮跳过补仓", t)
+            continue
         current_val = current_values.get(t, 0)
         diff = target["target_value"] - current_val
 
@@ -679,6 +685,8 @@ def main():
 
     result = execute_rebalance(
         client, risk, positions, cash, all_scores, latest_prices, macro_mult,
+        skip_buy=set(urgent_close_half),
+    )
     )
 
     # 保存状态 + 活动日志

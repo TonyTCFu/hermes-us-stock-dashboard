@@ -184,5 +184,111 @@
         "pnl_pct": 2.6
       }
     ]
+  },
+  {
+    "date": "2026-06-20 10:06 ET",
+    "action": "rebalance",
+    "equity": 107683.86,
+    "cash": 44893.97,
+    "vix": 19.44,
+    "macro_mult": 1.0,
+    "details": {
+      "equity": 107683.86,
+      "cash": 44893.97,
+      "vix": 19.44,
+      "macro_mult": 1.0,
+      "sell_tickers": [],
+      "buy_tickers": [],
+      "tp_hits": [
+        "AMD",
+        "INTC"
+      ],
+      "sl_hits": [],
+      "orders": 6
+    },
+    "positions_before": [
+      {
+        "ticker": "AMD",
+        "qty": 16,
+        "pnl_pct": 14.4
+      },
+      {
+        "ticker": "AVGO",
+        "qty": 27,
+        "pnl_pct": 8.2
+      },
+      {
+        "ticker": "CAT",
+        "qty": 11,
+        "pnl_pct": 9.0
+      },
+      {
+        "ticker": "CSCO",
+        "qty": 49,
+        "pnl_pct": 0.3
+      },
+      {
+        "ticker": "GOOGL",
+        "qty": 15,
+        "pnl_pct": 0.1
+      },
+      {
+        "ticker": "INTC",
+        "qty": 48,
+        "pnl_pct": 24.1
+      },
+      {
+        "ticker": "LLY",
+        "qty": 7,
+        "pnl_pct": -4.1
+      },
+      {
+        "ticker": "NVDA",
+        "qty": 32,
+        "pnl_pct": 1.9
+      }
+    ],
+    "positions_after": [
+      {
+        "ticker": "AMD",
+        "qty": 16,
+        "pnl_pct": 14.4
+      },
+      {
+        "ticker": "AVGO",
+        "qty": 27,
+        "pnl_pct": 8.2
+      },
+      {
+        "ticker": "CAT",
+        "qty": 11,
+        "pnl_pct": 9.0
+      },
+      {
+        "ticker": "CSCO",
+        "qty": 49,
+        "pnl_pct": 0.3
+      },
+      {
+        "ticker": "GOOGL",
+        "qty": 15,
+        "pnl_pct": 0.1
+      },
+      {
+        "ticker": "INTC",
+        "qty": 48,
+        "pnl_pct": 24.1
+      },
+      {
+        "ticker": "LLY",
+        "qty": 7,
+        "pnl_pct": -4.1
+      },
+      {
+        "ticker": "NVDA",
+        "qty": 32,
+        "pnl_pct": 1.9
+      }
+    ]
   }
 ]
