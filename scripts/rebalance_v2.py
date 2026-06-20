@@ -61,6 +61,22 @@ CHANGE_THRESHOLD = 2            # Top-N 名单变化超过此数触发调仓
 STATE_FILE = Path(__file__).resolve().parent.parent / "data" / "rebalance_state.json"
 ACTIVITY_FILE = Path(__file__).resolve().parent.parent / "data" / "activity.json"
 
+
+def is_trading_day() -> bool:
+    """判断今天是否为美股交易日。周末和 NYSE 假日返回 False。"""
+    from datetime import date
+    today = date.today()
+    wd = today.weekday()
+    if wd >= 5:
+        return False
+    holidays = {
+        "2026-01-01", "2026-01-19", "2026-02-16", "2026-04-03",
+        "2026-05-25", "2026-06-19", "2026-07-03", "2026-09-07",
+        "2026-11-26", "2026-12-25",
+    }
+    return today.strftime("%Y-%m-%d") not in holidays
+
+
 # 仅需价格数据的因子（无额外依赖）
 PRICE_ONLY_FACTORS = {"momentum", "low_vol", "flow", "ai_industry"}
 
@@ -498,6 +514,10 @@ def main():
     parser.add_argument("--auto", "-y", action="store_true", help="非交互模式（调度任务用）")
     parser.add_argument("--dry-run", "-n", action="store_true", help="仅分析不执行")
     args = parser.parse_args()
+
+    if not is_trading_day():
+        print(f"⏸️  今日 {date.today()} 非美股交易日，跳过调仓")
+        return
 
     store = DataStore(DB_PATH)
     client = get_alpaca_client()
